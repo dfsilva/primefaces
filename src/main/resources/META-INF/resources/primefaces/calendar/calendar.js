@@ -77,13 +77,15 @@ PrimeFaces.widget.Calendar = PrimeFaces.widget.BaseWidget.extend({
         //extensions
         if(this.cfg.popup && this.cfg.showOn) {
             var triggerButton = this.jqEl.siblings('.ui-datepicker-trigger:button');
-            triggerButton.html('').addClass('ui-button ui-widget ui-state-default ui-corner-all ui-button-icon-only')
+            triggerButton.html('').addClass('ui-button ui-widget ui-state-default ui-corner-all ui-button-icon-only input-group-addon btn')
                         .append('<span class="ui-button-icon-left ui-icon ui-icon-calendar"></span><span class="ui-button-text">ui-button</span>');
 
             var title = this.jqEl.attr('title');
             if(title) {
                 triggerButton.attr('title', title);
             }
+            
+            triggerButton.attr('style', 'font-size:16px;');
 
             PrimeFaces.skinButton(triggerButton);
             $('#ui-datepicker-div').addClass('ui-shadow');

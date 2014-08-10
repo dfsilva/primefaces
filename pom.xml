@@ -253,23 +253,16 @@
 		
 		<pluginRepository>
 			<snapshots>
-				<enabled>false</enabled>
+				<enabled>true</enabled>
 			</snapshots>
 			<id>prime-repo</id>
 			<name>PrimeFaces Maven Repository</name>
 			<url>http://repository.primefaces.org</url>
 			<layout>default</layout>
 		</pluginRepository>
+	
 	</pluginRepositories>
 
-    <pluginRepositories>
-        <pluginRepository>
-            <id>prime-repo</id>
-            <name>PrimeFaces Maven Repository</name>
-            <url>http://repository.primefaces.org</url>
-            <layout>default</layout>
-        </pluginRepository>
-    </pluginRepositories>
 
     <build>
         <defaultGoal>install</defaultGoal>

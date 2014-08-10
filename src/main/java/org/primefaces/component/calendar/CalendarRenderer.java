@@ -72,8 +72,14 @@ public class CalendarRenderer extends InputRenderer {
 
         writer.startElement("span", calendar);
         writer.writeAttribute("id", clientId, null);
-        if(calendar.getStyle() != null) writer.writeAttribute("style", calendar.getStyle(), null);
-        if(calendar.getStyleClass() != null) writer.writeAttribute("class", calendar.getStyleClass(), null);
+        if(calendar.getStyle() != null) 
+        	writer.writeAttribute("style", calendar.getStyle()+" width:100%;", null);
+        else
+        	writer.writeAttribute("style", "width:100%;", null);
+        if(calendar.getStyleClass() != null) 
+        	writer.writeAttribute("class", calendar.getStyleClass()+ " input-group", null);
+        else
+        	writer.writeAttribute("class", " input-group", null);
 
         //inline container
         if(!popup) {
@@ -104,11 +110,13 @@ public class CalendarRenderer extends InputRenderer {
         }
 
         if(popup) {
-            String inputStyleClass = Calendar.INPUT_STYLE_CLASS;
+            String inputStyleClass = Calendar.INPUT_STYLE_CLASS+" form-control";
             if(disabled) inputStyleClass = inputStyleClass + " ui-state-disabled";
             if(!calendar.isValid()) inputStyleClass = inputStyleClass + " ui-state-error";
             
             writer.writeAttribute("class", inputStyleClass, null);
+            
+            writer.writeAttribute("style", "width:90%", null);
               
             if(calendar.isReadonly()||calendar.isReadonlyInput()) writer.writeAttribute("readonly", "readonly", null);
             if(calendar.isDisabled()) writer.writeAttribute("disabled", "disabled", null);
