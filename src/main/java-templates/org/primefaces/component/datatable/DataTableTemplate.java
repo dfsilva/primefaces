@@ -44,7 +44,6 @@ import org.primefaces.event.ReorderEvent;
 import org.primefaces.model.Visibility;
 import org.primefaces.model.SortOrder;
 import org.primefaces.model.SelectableDataModel;
-import org.primefaces.model.SelectableDataModelWrapper;
 import java.lang.reflect.Array;
 import javax.el.ELContext;
 import javax.faces.model.DataModel;
@@ -53,6 +52,9 @@ import javax.faces.component.UINamingContainer;
 import org.primefaces.component.api.UIColumn;
 import org.primefaces.component.api.DynamicColumn;
 import javax.faces.context.FacesContext;
+import javax.faces.event.AbortProcessingException;
+import javax.faces.event.ComponentSystemEvent;
+import javax.faces.event.PostRestoreStateEvent;
 import org.primefaces.component.datatable.DataTable;
 import org.primefaces.model.SortMeta;
 import org.primefaces.component.datatable.feature.*;
@@ -388,6 +390,9 @@ import org.primefaces.util.SharedStringBuilder;
             
             List<?> data = null;
             
+			// #7176
+			calculateFirst();
+			
             if(this.isMultiSort()) {
                 data = lazyModel.load(getFirst(), getRows(), getMultiSortMeta(), getFilters());
             }
@@ -523,6 +528,14 @@ import org.primefaces.util.SharedStringBuilder;
         getStateHelper().put("filters", filters);
     }
     
+    public int getScrollOffset() {
+        return (java.lang.Integer) getStateHelper().eval("scrollOffset", 0);
+    }
+    
+    public void setScrollOffset(int scrollOffset) {
+        getStateHelper().put("scrollOffset", scrollOffset);
+    }
+    
     private List filterMetadata;
     public List getFilterMetadata() {
         return filterMetadata;
@@ -547,6 +560,11 @@ import org.primefaces.util.SharedStringBuilder;
         resetValue();
         setFirst(0);
         this.reset = true;
+        this.setValueExpression("sortBy", this.getDefaultSortByVE());
+        this.setSortFunction(this.getDefaultSortFunction());
+        this.setSortOrder(this.getDefaultSortOrder());
+        this.setSortByVE(null);
+        this.setSortColumn(null);
     }
 
     public boolean isFilteringEnabled() {
@@ -565,37 +583,6 @@ import org.primefaces.util.SharedStringBuilder;
         }
 
         return null;
-    }
-
-    private SelectableDataModelWrapper selectableDataModelWrapper = null;
-
-    /**
-    * Override to support filtering, we return the filtered subset in getValue instead of actual data.
-    * In case selectableDataModel is bound, we wrap it with filtered data.
-    * 
-    */ 
-    @Override
-    public Object getValue() {
-        Object value = super.getValue();
-        List<?> filteredValue = this.getFilteredValue();
-        
-        if(filteredValue != null) {
-            if(value instanceof SelectableDataModel) {
-                return selectableDataModelWrapper == null 
-                                ? (selectableDataModelWrapper = new SelectableDataModelWrapper((SelectableDataModel) value, filteredValue))
-                                : selectableDataModelWrapper;
-            } 
-            else {
-                return filteredValue;
-            }
-        }
-        else {
-            return value;
-        }
-    }
-    
-    public void setSelectableDataModelWrapper(SelectableDataModelWrapper wrapper) {
-        this.selectableDataModelWrapper = wrapper;
     }
 
     public Object getLocalSelection() {
@@ -700,10 +687,16 @@ import org.primefaces.util.SharedStringBuilder;
     protected void addToSelectedRowKeys(Object object, Map<String,Object> map, String var, boolean hasRowKey) {
         if(hasRowKey) {
             map.put(var, object);
-            this.selectedRowKeys.add(this.getRowKey());
+            Object rowKey = this.getRowKey();
+            if (rowKey != null) {
+                this.selectedRowKeys.add(rowKey);
+            }
         }
         else {
-            this.selectedRowKeys.add(this.getRowKeyFromModel(object));
+            Object rowKey = this.getRowKeyFromModel(object);
+            if (rowKey != null) {
+                this.selectedRowKeys.add(rowKey);
+            }
         }
     }
 
@@ -934,6 +927,27 @@ import org.primefaces.util.SharedStringBuilder;
         return this.sortByVE;
     }
     
+    public void setDefaultSortByVE(ValueExpression ve) {
+        this.setValueExpression("defaultSortBy", ve);
+    }
+    public ValueExpression getDefaultSortByVE() {
+        return this.getValueExpression("defaultSortBy");
+    }
+        
+    public void setDefaultSortOrder(String val) {
+        this.getStateHelper().put("defaultSortOrder", val);
+    }
+    public String getDefaultSortOrder() {
+        return (String) this.getStateHelper().get("defaultSortOrder");
+    }
+    
+    public void setDefaultSortFunction(MethodExpression obj) {
+        this.getStateHelper().put("defaultSortFunction", obj);
+    }
+    public MethodExpression getDefaultSortFunction() {
+        return (MethodExpression) this.getStateHelper().get("defaultSortFunction");
+    }
+    
     public Locale resolveDataLocale() {
         FacesContext context = this.getFacesContext();
         Object userLocale = this.getDataLocale();
@@ -969,5 +983,26 @@ import org.primefaces.util.SharedStringBuilder;
         }
         
         return iterableChildren;
+    }
+    
+    public void processEvent(ComponentSystemEvent event) throws AbortProcessingException {
+        super.processEvent(event);
+        if(!this.isLazy() && event instanceof PostRestoreStateEvent && (this == event.getComponent())) {
+            Object filteredValue = this.getFilteredValue();
+            if(filteredValue != null) {
+                this.setValue(filteredValue);
+            }
+        }
+    }
+    
+    public void updateFilteredValue(FacesContext context,  List<?> value) {
+        ValueExpression ve = this.getValueExpression("filteredValue");
+        
+        if(ve != null) {
+            ve.setValue(context.getELContext(), value);
+        }
+        else {            
+            this.setFilteredValue(value);
+        }
     }
     

@@ -256,6 +256,9 @@
                 }
                 else {
                     PrimeFaces.widgets[widgetVar] = new PrimeFaces.widget[widgetConstructor](cfg);  //page init
+                    if(PrimeFaces.settings.legacyWidgetNamespace) {
+                        window[widgetVar] = PrimeFaces.widgets[widgetVar]; 
+                    }
                 }
             }
             else {
@@ -526,7 +529,7 @@
             monthNames: ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December' ],
             monthNamesShort: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec' ],
             dayNames: ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'],
-            dayNamesShort: ['Sun', 'Mon', 'Tue', 'Wed', 'Tue', 'Fri', 'Sat'],
+            dayNamesShort: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'],
             dayNamesMin: ['S', 'M', 'T', 'W ', 'T', 'F ', 'S'],
             weekHeader: 'Week',
             firstDay: 0,
@@ -552,10 +555,6 @@
     	var widgetInstance = PrimeFaces.widgets[widgetVar];
     	
     	if (!widgetInstance) {
-	        if (window.console && console.log) { 
-	            console.log("Widget for var '" + widgetVar + "' not available!");
-	        }
-	        
 	        PrimeFaces.error("Widget for var '" + widgetVar + "' not available!");
     	}
     	

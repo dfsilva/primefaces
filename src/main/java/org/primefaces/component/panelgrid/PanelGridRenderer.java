@@ -73,25 +73,26 @@ public class PanelGridRenderer extends CoreRenderer {
         
         int i = 0;
         for(UIComponent child : grid.getChildren()) {
+            if(!child.isRendered()) {
+                continue;
+            }
+            
             int colMod = i % columns;
-
             if(colMod == 0) {
                 writer.startElement("tr", null);
                 writer.writeAttribute("class", PanelGrid.ROW_CLASS, null);
                 writer.writeAttribute("role", "row", null);
             }
-           
-            if(child.isRendered()) {
-                String columnClass = (colMod < columnClasses.length) ? PanelGrid.CELL_CLASS + " " + columnClasses[colMod].trim() : PanelGrid.CELL_CLASS;
-                writer.startElement("td", null);
-                writer.writeAttribute("role", "gridcell", null);
-                writer.writeAttribute("class", columnClass, null);
-                child.encodeAll(context);
-                writer.endElement("td");
-                
-                i++;
-                colMod = i % columns;
-            }
+            
+            String columnClass = (colMod < columnClasses.length) ? PanelGrid.CELL_CLASS + " " + columnClasses[colMod].trim() : PanelGrid.CELL_CLASS;
+            writer.startElement("td", null);
+            writer.writeAttribute("role", "gridcell", null);
+            writer.writeAttribute("class", columnClass, null);
+            child.encodeAll(context);
+            writer.endElement("td");
+
+            i++;
+            colMod = i % columns;
             
             if(colMod == 0) {
                 writer.endElement("tr");

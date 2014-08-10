@@ -11,7 +11,7 @@
     <groupId>org.primefaces</groupId>
     <artifactId>primefaces</artifactId>
     <packaging>jar</packaging>
-    <version>5.0</version>
+    <version>5.0.5-SNAPSHOT</version>
     <name>primefaces</name>
     <url>http://www.primefaces.org</url>
     
@@ -262,6 +262,15 @@
 		</pluginRepository>
 	</pluginRepositories>
 
+    <pluginRepositories>
+        <pluginRepository>
+            <id>prime-repo</id>
+            <name>PrimeFaces Maven Repository</name>
+            <url>http://repository.primefaces.org</url>
+            <layout>default</layout>
+        </pluginRepository>
+    </pluginRepositories>
+
     <build>
         <defaultGoal>install</defaultGoal>
 
@@ -436,6 +445,7 @@
                                 <include>${project.build.directory}/classes/META-INF/resources/primefaces/dialog/dialog.css</include>
                                 <include>${project.build.directory}/classes/META-INF/resources/primefaces/fieldset/fieldset.css</include>
                                 <include>${project.build.directory}/classes/META-INF/resources/primefaces/forms/forms.css</include>
+                                <include>${project.build.directory}/classes/META-INF/resources/primefaces/grid/grid.css</include>
                                 <include>${project.build.directory}/classes/META-INF/resources/primefaces/growl/growl.css</include>
                                 <include>${project.build.directory}/classes/META-INF/resources/primefaces/inplace/inplace.css</include>
                                 <include>${project.build.directory}/classes/META-INF/resources/primefaces/lightbox/lightbox.css</include>
@@ -661,6 +671,7 @@
                                         <include>${project.build.directory}/classes/META-INF/resources/primefaces/fieldset/fieldset.css</include>
                                         <include>${project.build.directory}/classes/META-INF/resources/primefaces/forms/forms.css</include>
                                         <include>${project.build.directory}/classes/META-INF/resources/primefaces/growl/growl.css</include>
+                                        <include>${project.build.directory}/classes/META-INF/resources/primefaces/grid/grid.css</include>
                                         <include>${project.build.directory}/classes/META-INF/resources/primefaces/inplace/inplace.css</include>
                                         <include>${project.build.directory}/classes/META-INF/resources/primefaces/lightbox/lightbox.css</include>
                                         <include>${project.build.directory}/classes/META-INF/resources/primefaces/menu/menu.css</include>

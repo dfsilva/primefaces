@@ -17,7 +17,6 @@ package org.primefaces.component.datatable.feature;
 
 import java.io.IOException;
 import java.util.*;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.el.ELContext;
 import javax.el.MethodExpression;
@@ -93,7 +92,8 @@ public class FilterFeature implements DataTableFeature {
             
     public void encode(FacesContext context, DataTableRenderer renderer, DataTable table) throws IOException {
         //reset state
-        updateFilteredValue(context, table, null);
+        table.updateFilteredValue(context, null);
+        table.setValue(null);
         table.setFirst(0);
         table.setRowIndex(-1);
         
@@ -103,7 +103,7 @@ public class FilterFeature implements DataTableFeature {
         else {
             String globalFilterParam = table.getClientId(context) + UINamingContainer.getSeparatorChar(context) + "globalFilter";
             filter(context, table, table.getFilterMetadata(), globalFilterParam);
-            
+                        
             //sort new filtered data to restore sort state
             boolean sorted = (table.getValueExpression("sortBy") != null || table.getSortBy() != null);
             if(sorted) {
@@ -114,8 +114,11 @@ public class FilterFeature implements DataTableFeature {
                 else
                     sortFeature.singleSort(context, table);
             }
+            
+            Object filteredValue = table.getFilteredValue();
+            table.setValue(filteredValue);
         }
-                
+                        
         renderer.encodeTbody(context, table, true);
     }
     
@@ -137,7 +140,7 @@ public class FilterFeature implements DataTableFeature {
                 Object filterValue = filterMeta.getFilterValue();
                 UIColumn column = filterMeta.getColumn();
                 MethodExpression filterFunction = column.getFilterFunction();
-                ValueExpression filterByVE = filterMeta.getFilterByVE();
+                ValueExpression filterByVE = table.getValueExpression("filterBy");
                 
                 if(column instanceof DynamicColumn) {
                     ((DynamicColumn) column).applyStatelessModel();
@@ -182,31 +185,11 @@ public class FilterFeature implements DataTableFeature {
         }
 
         //save filtered data
-        updateFilteredValue(context, table, filteredData);
+        table.updateFilteredValue(context, filteredData);
 
         table.setRowIndex(-1);  //reset datamodel
     }
-    
-    public void updateFilteredValue(FacesContext context, DataTable table, List<?> value) {
-        table.setSelectableDataModelWrapper(null);
-        ValueExpression ve = table.getValueExpression("filteredValue");
         
-        if(ve != null) {
-            ve.setValue(context.getELContext(), value);
-        }
-        else {
-            if(value != null) {
-                logger.log(Level.WARNING, "DataTable {0} has filtering enabled but no filteredValue model reference is defined"
-                    + ", for backward compatibility falling back to page viewstate method to keep filteredValue."
-                    + " It is highly suggested to use filtering with a filteredValue model reference as viewstate method is deprecated and will be removed in future."
-                    , new Object[]{table.getClientId(context)});
-            
-            }
-            
-            table.setFilteredValue(value);
-        }
-    }
-    
     private Map<String,Object> populateFilterParameterMap(FacesContext context, DataTable table, List<FilterMeta> filterMetadata, String globalFilterParam) {
         Map<String,String> params = context.getExternalContext().getRequestParameterMap(); 
         Map<String,Object> filterParameterMap = new HashMap<String, Object>();
@@ -264,10 +247,9 @@ public class FilterFeature implements DataTableFeature {
 
                         if(column.isRendered()) {
                             ValueExpression columnFilterByVE = column.getValueExpression("filterBy");
-                            Object filterByProperty = column.getFilterBy();
                             
-                            if(columnFilterByVE != null || filterByProperty != null) {
-                                ValueExpression filterByVE = (columnFilterByVE != null) ? columnFilterByVE : createFilterByVE(context, var, filterByProperty);
+                            if(columnFilterByVE != null) {
+                                ValueExpression filterByVE = columnFilterByVE;
                                 UIComponent filterFacet = column.getFacet("filter");
                                 Object filterValue;
                                 
@@ -286,23 +268,19 @@ public class FilterFeature implements DataTableFeature {
         else {
             for(UIColumn column : table.getColumns()) {
                 ValueExpression columnFilterByVE = column.getValueExpression("filterBy");
-                Object filterByProperty = column.getFilterBy();
                 
-                if (columnFilterByVE != null || filterByProperty != null) {
-                    UIComponent filterFacet = column.getFacet("filter");
+                if (columnFilterByVE != null) {
+                    UIComponent filterFacet = column.getFacet("filter");                    
+                    ValueExpression filterByVE = columnFilterByVE;
                     Object filterValue = null;
-                    ValueExpression filterByVE = null;
                     String filterId = null;
                     
                     if(column instanceof Column) {
-                        filterByVE = (columnFilterByVE != null) ? columnFilterByVE : createFilterByVE(context, var, filterByProperty);
                         filterId = column.getClientId(context) + separator + "filter";
                     }
                     else if(column instanceof DynamicColumn) {
                         DynamicColumn dynamicColumn = (DynamicColumn) column;
                         dynamicColumn.applyStatelessModel();
-                        filterByProperty = column.getFilterBy();
-                        filterByVE = (filterByProperty == null) ? columnFilterByVE : createFilterByVE(context, var, filterByProperty);
                         filterId = dynamicColumn.getContainerClientId(context) + separator + "filter";
                         dynamicColumn.cleanStatelessModel();
                     }
@@ -346,12 +324,7 @@ public class FilterFeature implements DataTableFeature {
 
         return filterConstraint;
     }
-    
-    private ValueExpression createFilterByVE(FacesContext context, String var, Object filterBy) {
-        ELContext elContext = context.getELContext();
-        return context.getApplication().getExpressionFactory().createValueExpression(elContext, "#{" + var + "." + filterBy + "}", Object.class);
-    }
-    
+        
     private class FilterMeta {
         
         private UIColumn column;

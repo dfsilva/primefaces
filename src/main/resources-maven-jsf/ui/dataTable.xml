@@ -336,7 +336,7 @@
 			<required>false</required>
 			<type>java.lang.String</type>
             <defaultValue>new</defaultValue>
-            <description>Defines row select mode for checkbox based selection, valid values are new (default) and add.</description>
+            <description>Defines row select mode for checkbox based selection, valid values are new (default), add and checkbox.</description>
 		</attribute>
         <attribute>
 			<name>rowExpandMode</name>
@@ -385,6 +385,13 @@
 			<type>java.lang.Boolean</type>
             <defaultValue>false</defaultValue>
             <description>Ignores processing of children during lifecycle, improves performance if table only has output components, default is false.</description>
+		</attribute>
+        <attribute>
+			<name>disabledTextSelection</name>
+			<required>false</required>
+			<type>java.lang.Boolean</type>
+            <defaultValue>true</defaultValue>
+            <description>Disables text selection on row click. Default is true.</description>
 		</attribute>
 	</attributes>
 	<resources>

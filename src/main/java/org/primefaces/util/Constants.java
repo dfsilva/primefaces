@@ -34,6 +34,7 @@ public class Constants {
         public static final String UPLOADER = "primefaces.UPLOADER";
         public static final String CACHE_PROVIDER = "primefaces.CACHE_PROVIDER";
         public static final String TRANSFORM_METADATA = "primefaces.TRANSFORM_METADATA";
+        public static final String LEGACY_WIDGET_NAMESPACE = "primefaces.LEGACY_WIDGET_NAMESPACE";
     }
 
     public class RequestParams {
@@ -77,6 +78,8 @@ public class Constants {
     public final static String DEFAULT_CACHE_REGION = "primefaces.DEFAULT_CACHE_REGION";
     
     public final static String MOBILE_RENDER_KIT_ID = "PRIMEFACES_MOBILE";
+    
+    public static final String HELPER_RENDERER = "org.primefaces.HELPER_RENDERER";
     
     
 }

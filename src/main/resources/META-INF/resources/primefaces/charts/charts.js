@@ -22440,7 +22440,7 @@ PrimeFaces.widget.ChartUtils = {
                     }
                 };
                 
-                if(chart.cfg.stackSeries) {
+                if(chart.cfg.stackSeries && chart.cfg.axes.xaxis.renderer !== $.jqplot.DateAxisRenderer) {
                     PrimeFaces.widget.ChartUtils.transformStackedData(chart);
                 }
             }
@@ -22615,6 +22615,7 @@ PrimeFaces.widget.Chart = PrimeFaces.widget.DeferredWidget.extend({
                 renderer: $.jqplot.EnhancedLegendRenderer,
                 show: true,
                 location: this.cfg.legendPosition,
+                placement: this.cfg.legendPlacement,
                 rendererOptions: {
                     numberRows: this.cfg.legendRows||0,
                     numberColumns: this.cfg.legendCols||0

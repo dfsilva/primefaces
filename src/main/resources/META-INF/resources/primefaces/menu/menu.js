@@ -530,7 +530,9 @@ PrimeFaces.widget.SlideMenu = PrimeFaces.widget.Menu.extend({
         this.rootList.animate({
             left: rootLeft
         }, 500, 'easeInOutCirc', function() {
-            last.hide();
+            if(last !== null) {
+                last.hide();
+            }
             
             if(depth == 0) {
                 _self.backward.fadeOut('fast');
@@ -543,7 +545,7 @@ PrimeFaces.widget.SlideMenu = PrimeFaces.widget.Menu.extend({
     },
     
     pop: function() {
-        return this.stack.pop();
+        return this.stack.length !== 0 ? this.stack.pop() : null;
     },
     
     last: function() {
@@ -720,9 +722,10 @@ PrimeFaces.widget.MenuButton = PrimeFaces.widget.BaseWidget.extend({
         /**
         * handler for document mousedown to hide the overlay
         **/
-        $(document.body).bind('mousedown.ui-menubutton', function (e) {
+        var hideNS = 'mousedown.' + this.id;
+        $(document.body).off(hideNS).on(hideNS, function (e) {
             //do nothing if hidden already
-            if($this.menu.is(":hidden")) {
+            if($this.menu.is(":hidden") || $this.cfg.disabled) {
                 return;
             }
 
@@ -856,13 +859,7 @@ PrimeFaces.widget.ContextMenu = PrimeFaces.widget.TieredMenu.extend({
                         var widget = PrimeFaces.widgets[_self.cfg.targetWidgetVar];
                         
                         if(widget.cfg.selectionMode) {
-                            widget.onRowClick(e, this, true);
-
-                            if(widget.hasBehavior('contextMenu')) {
-                                var rowMeta = widget.getRowMeta($(this));
-
-                                widget.fireRowSelectEvent(rowMeta.key, 'contextMenu');
-                            }
+                            widget.onRowRightClick(e, this);
 
                             _self.show(e);
 
@@ -1019,6 +1016,7 @@ PrimeFaces.widget.MegaMenu = PrimeFaces.widget.BaseWidget.extend({
     init: function(cfg) {
         this._super(cfg);
         
+        this.cfg.vertical = this.jq.hasClass('ui-megamenu-vertical');
         this.rootList = this.jq.children('ul.ui-menu-list');
         this.rootLinks = this.rootList.find('> li.ui-menuitem > a.ui-menuitem-link:not(.ui-state-disabled)');                  
         this.subLinks = this.jq.find('.ui-menu-child a.ui-menuitem-link:not(.ui-state-disabled)');
@@ -1031,7 +1029,7 @@ PrimeFaces.widget.MegaMenu = PrimeFaces.widget.BaseWidget.extend({
     },
     
     bindEvents: function() {
-        var _self = this;
+        var $this = this;
   
         this.rootLinks.mouseenter(function(e) {
             var link = $(this),
@@ -1039,19 +1037,19 @@ PrimeFaces.widget.MegaMenu = PrimeFaces.widget.BaseWidget.extend({
             
             var current = menuitem.siblings('.ui-menuitem-active');
             if(current.length > 0) {
-                _self.deactivate(current, false);
+                $this.deactivate(current, false);
             }
             
-            if(_self.cfg.autoDisplay||_self.active) {
-                _self.activate(menuitem);
+            if($this.cfg.autoDisplay||$this.active) {
+                $this.activate(menuitem);
             }
             else {
-                _self.highlight(menuitem);
+                $this.highlight(menuitem);
             }
             
         });
         
-        if(this.cfg.autoDisplay == false) {
+        if(this.cfg.autoDisplay === false) {
             this.rootLinks.data('primefaces-megamenu', this.id).find('*').data('primefaces-megamenu', this.id)
             
             this.rootLinks.click(function(e) {
@@ -1059,14 +1057,14 @@ PrimeFaces.widget.MegaMenu = PrimeFaces.widget.BaseWidget.extend({
                 menuitem = link.parent(),
                 submenu = link.next();
 
-                if(submenu.length == 1) {
+                if(submenu.length === 1) {
                     if(submenu.is(':visible')) {
-                        _self.active = false;
-                        _self.deactivate(menuitem, true);
+                        $this.active = false;
+                        $this.deactivate(menuitem, true);
                     }
                     else {                                        
-                        _self.active = true;
-                        _self.activate(menuitem);
+                        $this.active = true;
+                        $this.activate(menuitem);
                     }
                 }
                 
@@ -1087,9 +1085,9 @@ PrimeFaces.widget.MegaMenu = PrimeFaces.widget.BaseWidget.extend({
         });
         
         this.rootList.mouseleave(function(e) {
-            var activeitem = _self.rootList.children('.ui-menuitem-active');
-            if(activeitem.length == 1) {
-                _self.deactivate(activeitem, false);
+            var activeitem = $this.rootList.children('.ui-menuitem-active');
+            if(activeitem.length === 1) {
+                $this.deactivate(activeitem, false);
             }
         });
         
@@ -1099,12 +1097,12 @@ PrimeFaces.widget.MegaMenu = PrimeFaces.widget.BaseWidget.extend({
         
         $(document.body).click(function(e) {
             var target = $(e.target);
-            if(target.data('primefaces-megamenu') == _self.id) {
+            if(target.data('primefaces-megamenu') === $this.id) {
                 return;
             }
             
-            _self.active = false;
-            _self.deactivate(_self.rootList.children('li.ui-menuitem-active'), true);
+            $this.active = false;
+            $this.deactivate($this.rootList.children('li.ui-menuitem-active'), true);
         });
     },
     
@@ -1132,24 +1130,38 @@ PrimeFaces.widget.MegaMenu = PrimeFaces.widget.BaseWidget.extend({
     
     activate: function(menuitem) {
         var submenu = menuitem.children('.ui-menu-child'),
-        _self = this;
+        $this = this;
         
-        _self.highlight(menuitem);
+        $this.highlight(menuitem);
         
         if(submenu.length > 0) {
-            _self.showSubmenu(menuitem, submenu);
+            $this.showSubmenu(menuitem, submenu);
         }
     },
     
     showSubmenu: function(menuitem, submenu) {
-        submenu.css('z-index', ++PrimeFaces.zindex);
+        var pos = null;
+        
+        if(this.cfg.vertical) {
+            pos = {
+                my: 'left top',
+                at: 'right top',
+                of: menuitem,
+                collision: 'flipfit'
+            };
+        }
+        else {
+            pos = {
+                my: 'left top',
+                at: 'left bottom',
+                of: menuitem,
+                collision: 'flipfit'
+            };
+        }
 
-        submenu.css({
-            'left': 0
-            ,'top': menuitem.outerHeight()
-        });
-
-        submenu.show();
+        submenu.css('z-index', ++PrimeFaces.zindex)
+                .show()
+                .position(pos);
     }
     
 });

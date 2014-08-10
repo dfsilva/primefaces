@@ -126,29 +126,38 @@ PrimeFaces.ajax = {
     
     Queue: {
 
-        delayHandler : null,
+        delays: {},
 
-        requests : new Array(),
+        requests: new Array(),
+        
+        xhrs: new Array(),
 
-        offer : function(request) {
-            if (this.delayHandler) {
-                clearTimeout(this.delayHandler);
-                this.delayHandler = null;
-            }
+        offer: function(request) {            
+            if(request.delay) {
+                var sourceId = null,
+                $this = this,
+                sourceId = (typeof(request.source) === 'string') ? request.source: $(request.source).attr('id'),
+                createTimeout = function() {
+                        return setTimeout(function() {
+                            $this.requests.push(request);
 
-            if (request.delay && request.delay > 0) {
-                var $this = this;
-
-                this.delayHandler = setTimeout(function() {
-                    $this.requests.push(request);
-
-                    if($this.requests.length === 1) {
-                        PrimeFaces.ajax.Request.send(request);
-                    }
-                }, request.delay);
-
-            } else {
-
+                            if($this.requests.length === 1) {
+                                PrimeFaces.ajax.Request.send(request);
+                            }
+                        }, request.delay);
+                };
+                        
+                if(this.delays[sourceId]) {
+                    clearTimeout(this.delays[sourceId].timeout);
+                    this.delays[sourceId].timeout = createTimeout();
+                }
+                else {
+                    this.delays[sourceId] = {
+                        timeout: createTimeout()
+                    };
+                }
+            } 
+            else {
                 this.requests.push(request);
 
                 if(this.requests.length === 1) {
@@ -157,7 +166,7 @@ PrimeFaces.ajax = {
             }
         },
 
-        poll : function() {
+        poll: function() {
             if(this.isEmpty()) {
                 return null;
             }
@@ -172,7 +181,7 @@ PrimeFaces.ajax = {
             return processed;
         },
 
-        peek : function() {
+        peek: function() {
             if(this.isEmpty()) {
                 return null;
             }
@@ -180,8 +189,28 @@ PrimeFaces.ajax = {
             return this.requests[0];
         },
 
-        isEmpty : function() {
+        isEmpty: function() {
             return this.requests.length === 0;
+        },
+        
+        addXHR: function(xhr) {
+            this.xhrs.push(xhr);
+        },
+        
+        removeXHR: function(xhr) {
+            var index = $.inArray(xhr, this.xhrs);
+            if(index > -1) {
+                this.xhrs.splice(index, 1);
+            }
+        },
+        
+        abortAll: function() {
+            for(var i = 0; i < this.xhrs.length; i++) {
+                this.xhrs[i].abort();
+            }
+            
+            this.xhrs = new Array();
+            this.requests = new Array();
         }
     },
     
@@ -428,11 +457,11 @@ PrimeFaces.ajax = {
                 },
                 error: function(xhr, status, errorThrown) {                    
                     if(cfg.onerror) {
-                        cfg.onerror.call(this, [xhr, status, errorThrown]);
+                        cfg.onerror.call(this, xhr, status, errorThrown);
                     }
 
                     if(global) {
-                        $(document).trigger('pfAjaxError', xhr, this, errorThrown);
+                        $(document).trigger('pfAjaxError', [xhr, this, errorThrown]);
                     }
 
                     PrimeFaces.error('Request return with error:' + status + '.');
@@ -480,6 +509,8 @@ PrimeFaces.ajax = {
                     }
 
                     PrimeFaces.debug('Response completed.');
+                    
+                    PrimeFaces.ajax.Queue.removeXHR(xhr);
 
                     if(!cfg.async) {
                         PrimeFaces.ajax.Queue.poll();
@@ -487,7 +518,7 @@ PrimeFaces.ajax = {
                 }
             };
 
-            $.ajax(xhrOptions);
+            PrimeFaces.ajax.Queue.addXHR($.ajax(xhrOptions));
         },
 
         resolveComponentsForAjaxCall: function(cfg, type) {
