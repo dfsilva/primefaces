@@ -116,7 +116,7 @@ public class CalendarRenderer extends InputRenderer {
             
             writer.writeAttribute("class", inputStyleClass, null);
             
-            writer.writeAttribute("style", "width:90%", null);
+            writer.writeAttribute("style", "width:80%", null);
               
             if(calendar.isReadonly()||calendar.isReadonlyInput()) writer.writeAttribute("readonly", "readonly", null);
             if(calendar.isDisabled()) writer.writeAttribute("disabled", "disabled", null);
