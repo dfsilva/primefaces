@@ -16,6 +16,7 @@
 package org.primefaces.mobile.component.uiswitch;
 
 import java.io.IOException;
+import java.util.logging.Logger;
 import javax.faces.component.UIComponent;
 import javax.faces.context.FacesContext;
 import javax.faces.context.ResponseWriter;
@@ -24,6 +25,8 @@ import org.primefaces.util.ComponentUtils;
 import org.primefaces.util.WidgetBuilder;
 
 public class UISwitchRenderer extends CoreRenderer {
+    
+    private final static Logger logger = Logger.getLogger(UISwitchRenderer.class.getName());
     
     @Override
 	public void decode(FacesContext context, UIComponent component) {
@@ -53,6 +56,8 @@ public class UISwitchRenderer extends CoreRenderer {
         
         encodeMarkup(context, uiswitch);
         encodeScript(context, uiswitch);
+        
+        logger.info("Mobile only switch component is deprecated, use p:inputSwitch instead.");
     }
     
     public void encodeMarkup(FacesContext context, UISwitch uiswitch) throws IOException {

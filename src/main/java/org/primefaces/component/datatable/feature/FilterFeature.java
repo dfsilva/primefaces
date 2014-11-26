@@ -34,6 +34,7 @@ import org.primefaces.component.datatable.DataTable;
 import org.primefaces.component.datatable.DataTableRenderer;
 import org.primefaces.component.row.Row;
 import org.primefaces.context.RequestContext;
+import org.primefaces.model.FilterMeta;
 import org.primefaces.model.filter.*;
 import org.primefaces.util.Constants;
 
@@ -103,7 +104,7 @@ public class FilterFeature implements DataTableFeature {
         else {
             String globalFilterParam = table.getClientId(context) + UINamingContainer.getSeparatorChar(context) + "globalFilter";
             filter(context, table, table.getFilterMetadata(), globalFilterParam);
-                        
+                                  
             //sort new filtered data to restore sort state
             boolean sorted = (table.getValueExpression("sortBy") != null || table.getSortBy() != null);
             if(sorted) {
@@ -114,15 +115,12 @@ public class FilterFeature implements DataTableFeature {
                 else
                     sortFeature.singleSort(context, table);
             }
-            
-            Object filteredValue = table.getFilteredValue();
-            table.setValue(filteredValue);
         }
                         
         renderer.encodeTbody(context, table, true);
     }
     
-    private void filter(FacesContext context, DataTable table, List<FilterMeta> filterMetadata, String globalFilterParam) {
+    public void filter(FacesContext context, DataTable table, List<FilterMeta> filterMetadata, String globalFilterParam) {
         Map<String,String> params = context.getExternalContext().getRequestParameterMap();
         List filteredData = new ArrayList();
         Locale filterLocale = table.resolveDataLocale();
@@ -140,7 +138,7 @@ public class FilterFeature implements DataTableFeature {
                 Object filterValue = filterMeta.getFilterValue();
                 UIColumn column = filterMeta.getColumn();
                 MethodExpression filterFunction = column.getFilterFunction();
-                ValueExpression filterByVE = table.getValueExpression("filterBy");
+                ValueExpression filterByVE = filterMeta.getFilterByVE();
                 
                 if(column instanceof DynamicColumn) {
                     ((DynamicColumn) column).applyStatelessModel();
@@ -186,6 +184,9 @@ public class FilterFeature implements DataTableFeature {
 
         //save filtered data
         table.updateFilteredValue(context, filteredData);
+        
+        //update value
+        table.updateValue(table.getFilteredValue());
 
         table.setRowIndex(-1);  //reset datamodel
     }
@@ -323,31 +324,5 @@ public class FilterFeature implements DataTableFeature {
         }
 
         return filterConstraint;
-    }
-        
-    private class FilterMeta {
-        
-        private UIColumn column;
-        private ValueExpression filterByVE;
-        private Object filterValue;
-
-        public FilterMeta(UIColumn column, ValueExpression filterByVE, Object filterValue) {
-            this.column = column;
-            this.filterByVE = filterByVE;
-            this.filterValue = filterValue;
-        }
-
-        public UIColumn getColumn() {
-            return column;
-        }
-
-        public ValueExpression getFilterByVE() {
-            return filterByVE;
-        }
-
-        public Object getFilterValue() {
-            return filterValue;
-        }        
-        
     }
 }

@@ -162,20 +162,23 @@ PrimeFaces.widget.AutoComplete = PrimeFaces.widget.BaseWidget.extend({
                 $(this).removeClass('ui-state-active');
                 $this.search('');
                 $this.input.focus();
-                e.preventDefault(); 
+                e.preventDefault();
+                e.stopPropagation();
             }
         });
 
         //hide overlay when outside is clicked
-        var offset;
-        $(document.body).bind('mousedown.ui-autocomplete', function (e) {
+        this.hideNS = 'mousedown.' + this.id;
+        $(document.body).off(this.hideNS).on(this.hideNS, function (e) {
             if($this.panel.is(":hidden")) {
                 return;
             }
-            offset = $this.panel.offset();
+            
+            var offset = $this.panel.offset();
             if(e.target === $this.input.get(0)) {
                 return;
             }
+            
             if (e.pageX < offset.left ||
                 e.pageX > offset.left + $this.panel.width() ||
                 e.pageY < offset.top ||
@@ -194,13 +197,19 @@ PrimeFaces.widget.AutoComplete = PrimeFaces.widget.BaseWidget.extend({
 
     bindKeyEvents: function() {
         var $this = this;
+        
+        this.currentText = this.input.val();
+        this.previousText = this.input.val();
 
         //bind keyup handler
         this.input.keyup(function(e) {
             var keyCode = $.ui.keyCode,
             key = e.which,
             shouldSearch = true;
-
+            
+            $this.previousText = $this.currentText;
+            $this.currentText = this.value;
+            
             // Cancel a possible long running search when selecting an entry via enter
             if (key === keyCode.ENTER || key === keyCode.NUMPAD_ENTER) {
                 if ($this.timeout) {
@@ -235,7 +244,7 @@ PrimeFaces.widget.AutoComplete = PrimeFaces.widget.BaseWidget.extend({
                 
                 shouldSearch = false;
             }
-            else if($this.cfg.pojo && !$this.cfg.multiple) {
+            else if($this.cfg.pojo && !$this.cfg.multiple && ($this.previousText !== $this.currentText)) {
                 $this.hinput.val($(this).val());
             }
 
@@ -315,6 +324,7 @@ PrimeFaces.widget.AutoComplete = PrimeFaces.widget.BaseWidget.extend({
                         highlightedItem.click();
 
                         e.preventDefault();
+                        e.stopPropagation();
                         break;
 
                     case 18: //keyCode.ALT:
@@ -370,6 +380,9 @@ PrimeFaces.widget.AutoComplete = PrimeFaces.widget.BaseWidget.extend({
             else {
                 $this.input.val(item.attr('data-item-label')).focus();
 
+                this.currentText = $this.input.val();
+                this.previousText = $this.input.val();
+
                 if($this.cfg.pojo) {
                     $this.hinput.val(itemValue);
                 }
@@ -411,6 +424,11 @@ PrimeFaces.widget.AutoComplete = PrimeFaces.widget.BaseWidget.extend({
     showSuggestions: function(query) {
         this.items = this.panel.find('.ui-autocomplete-item');
         this.items.attr('role', 'option');
+        
+        if(this.cfg.grouping) {
+            this.groupItems();
+        }
+        
         this.bindDynamicEvents();
 
         var $this=this,
@@ -709,6 +727,40 @@ PrimeFaces.widget.AutoComplete = PrimeFaces.widget.BaseWidget.extend({
     
     displayAriaStatus: function(text) {
         this.status.html('<div>' + text + '</div>');
+    },
+    
+    groupItems: function() {
+        var $this = this;
+        
+        if(this.items.length) {
+            this.itemContainer = this.panel.children('.ui-autocomplete-items');
+            this.currentGroup = this.items.eq(0).data('item-group');
+            
+            this.items.eq(0).before(this.getGroupItem($this.currentGroup, $this.itemContainer));
+            
+            this.items.each(function(i) {
+                var item = $this.items.eq(i),
+                itemGroup = $this.items.eq(i).data('item-group');
+                
+                if($this.currentGroup !== itemGroup) {
+                    $this.currentGroup = itemGroup;
+                    item.before($this.getGroupItem(itemGroup, $this.itemContainer));
+                }
+            });
+        }
+    },
+    
+    getGroupItem: function(group, container) {
+        if(container.is('.ui-autocomplete-table')) {
+            if(!this.colspan) {
+                this.colspan = this.items.eq(0).children('td').length;
+            }
+            
+            return '<tr class="ui-autocomplete-group ui-widget-header"><td colspan="' + this.colspan + '">' + group + '</td></tr>';
+        }
+        else {
+            return '<li class="ui-autocomplete-group ui-autocomplete-list-item ui-widget-header">' + group + '</li>';
+        }
     }
 
 });

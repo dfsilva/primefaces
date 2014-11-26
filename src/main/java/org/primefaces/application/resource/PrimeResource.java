@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.primefaces.application;
+package org.primefaces.application.resource;
 
 import javax.faces.application.Resource;
 import javax.faces.application.ResourceWrapper;

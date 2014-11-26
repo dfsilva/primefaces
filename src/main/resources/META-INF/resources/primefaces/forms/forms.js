@@ -1118,9 +1118,8 @@ PrimeFaces.widget.SelectOneRadio = PrimeFaces.widget.BaseWidget.extend({
         //custom layout
         if(this.cfg.custom) {
             this.inputs = $('input:radio[name="' + this.id + '"]:not(:disabled)');
-            this.outputs = this.inputs.parent().next('.ui-radiobutton-box:not(.ui-state-disabled)');
+            this.outputs = this.inputs.parent().next('.ui-radiobutton-box');
             this.labels = $();
-            this.icons = this.outputs.find('.ui-radiobutton-icon');
 
             //labels
             for(var i=0; i < this.outputs.length; i++) {
@@ -1129,10 +1128,9 @@ PrimeFaces.widget.SelectOneRadio = PrimeFaces.widget.BaseWidget.extend({
         }
         //regular layout
         else {
-            this.outputs = this.jq.find('.ui-radiobutton-box:not(.ui-state-disabled)');
+            this.outputs = this.jq.find('.ui-radiobutton-box');
             this.inputs = this.jq.find(':radio:not(:disabled)');
             this.labels = this.jq.find('label:not(.ui-state-disabled)');
-            this.icons = this.jq.find('.ui-radiobutton-icon');
         }
 
         this.checkedRadio = this.outputs.filter('.ui-state-active');
@@ -1146,7 +1144,7 @@ PrimeFaces.widget.SelectOneRadio = PrimeFaces.widget.BaseWidget.extend({
     bindEvents: function() {
         var $this = this;
 
-        this.outputs.on('mouseover.selectOneRadio', function() {
+        this.outputs.filter(':not(.ui-state-disabled)').on('mouseover.selectOneRadio', function() {
             $(this).addClass('ui-state-hover');
         })
         .on('mouseout.selectOneRadio', function() {
@@ -1167,7 +1165,7 @@ PrimeFaces.widget.SelectOneRadio = PrimeFaces.widget.BaseWidget.extend({
             }
         });
 
-        this.labels.on('click.selectOneRadio', function(e) {
+        this.labels.filter(':not(.ui-state-disabled)').on('click.selectOneRadio', function(e) {
             var target = $(PrimeFaces.escapeClientId($(this).attr('for'))),
             radio = null;
 
@@ -2176,7 +2174,7 @@ PrimeFaces.widget.SelectCheckboxMenu = PrimeFaces.widget.BaseWidget.extend({
         }).on('blur.selectCheckboxMenu', function() {
             $this.jq.removeClass('ui-state-focus');
             $this.menuIcon.removeClass('ui-state-focus');
-        }).on('keydown.selectCheckboxMenu', function(e) {
+        }).on('keydown.selectCheckboxMenu', function(e) {
             var keyCode = $.ui.keyCode,
             key = e.which;
     
@@ -2212,7 +2210,7 @@ PrimeFaces.widget.SelectCheckboxMenu = PrimeFaces.widget.BaseWidget.extend({
             var keyCode = $.ui.keyCode,
             key = e.which;
             
-            if(key === keyCode.ENTER || key === keyCode.NUMPAD_ENTER) {
+            if(key === keyCode.ENTER || key === keyCode.NUMPAD_ENTER) {
                 $this.hide(true);
                 e.preventDefault();
             }
@@ -2725,8 +2723,8 @@ PrimeFaces.widget.DefaultCommand = PrimeFaces.widget.BaseWidget.extend({
         this.jqTarget.closest('form').off('keydown.' + this.id).on('keydown.' + this.id, function(e) {
            var keyCode = $.ui.keyCode;
            if(e.which == keyCode.ENTER || e.which == keyCode.NUMPAD_ENTER) {
-                //do not proceed if event target is not in this scope or target is a textarea
-                if(($this.scope && $this.scope.find(e.target).length == 0)||$(e.target).is('textarea')) {
+                //do not proceed if event target is not in this scope or target is a textarea,button or link
+                if(($this.scope && $this.scope.find(e.target).length == 0)||$(e.target).is('textarea,button,input[type="submit"],a')) {
                     return true;
                 }
 
@@ -2951,8 +2949,16 @@ PrimeFaces.widget.MultiSelectListbox = PrimeFaces.widget.BaseWidget.extend({
        var childItemsContainer = item.children('ul');
 
        if(childItemsContainer.length) {
-           var groupContainer = $('<div class="ui-multiselectlistbox-listcontainer ui-inputfield ui-widget-content ui-corner-all" style="display:none"></div>');
-           childItemsContainer.clone(true).appendTo(groupContainer).addClass('ui-multiselectlistbox-list').removeClass('ui-helper-hidden');
+           var groupContainer = $('<div class="ui-multiselectlistbox-listcontainer" style="display:none"></div>');
+           childItemsContainer.clone(true).appendTo(groupContainer).addClass('ui-multiselectlistbox-list ui-inputfield ui-widget-content').removeClass('ui-helper-hidden');
+           
+           if(this.cfg.showHeaders) {
+               groupContainer.prepend('<div class="ui-multiselectlistbox-header ui-widget-header ui-corner-top">' + item.children('span').text() + '</div>')
+                       .children('.ui-multiselectlistbox-list').addClass('ui-corner-bottom');
+           } else {
+               groupContainer.children().addClass('ui-corner-all');
+           } 
+            
            this.jq.append(groupContainer);
 
            if(this.cfg.effect)

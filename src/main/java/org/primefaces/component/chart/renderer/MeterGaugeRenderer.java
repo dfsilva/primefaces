@@ -42,18 +42,22 @@ public class MeterGaugeRenderer extends BasePlotRenderer {
         String gaugeLabel = model.getGaugeLabel();
         double min = model.getMin();
         double max = model.getMax();
+        Integer intervalInnerRadius = model.getIntervalInnerRadius();
+        Integer intervalOuterRadius = model.getIntervalOuterRadius();
         
         encodeNumberList(context, "intervals", model.getIntervals());
         encodeNumberList(context, "ticks", model.getTicks());
 
         if(gaugeLabel != null) {
-            writer.write(",gaugeLabel:'" + gaugeLabel + "'");
-            writer.write(",gaugeLabelPosition:'" + model.getGaugeLabelPosition() + "'");
+            writer.write(",gaugeLabel:\"" + gaugeLabel + "\"");
+            writer.write(",gaugeLabelPosition:\"" + model.getGaugeLabelPosition() + "\"");
         }
               
         writer.write(",showTickLabels:" + model.isShowTickLabels());
         writer.write(",labelHeightAdjust:" + model.getLabelHeightAdjust());
-        writer.write(",intervalOuterRadius:" + model.getIntervalOuterRadius());
+        
+        if(intervalInnerRadius != null) writer.write(",intervalInnerRadius:" + intervalInnerRadius);
+        if(intervalOuterRadius != null) writer.write(",intervalOuterRadius:" + intervalOuterRadius);
         
         if(min != Double.MIN_VALUE) writer.write(",min:" + min);
         if(max != Double.MAX_VALUE) writer.write(",max:" + max);

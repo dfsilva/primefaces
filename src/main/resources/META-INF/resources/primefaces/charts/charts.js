@@ -16167,12 +16167,8 @@ if (!document.createElement('canvas').getContext) {
             for (i=0; i<nr; i++) {
                 tr = $(document.createElement('tr'));
                 tr.addClass('jqplot-table-legend');
-                if (reverse){
-                    tr.prependTo(this._elem);
-                }
-                else{
-                    tr.appendTo(this._elem);
-                }
+                tr.appendTo(this._elem);
+                
                 for (j=0; j<nc; j++) {
                     if (idx < series.length && (series[idx].show || series[idx].showLabel)){
                         s = series[idx];
@@ -22549,9 +22545,11 @@ PrimeFaces.widget.ChartUtils = {
                         intervals: chart.cfg.intervals,
                         intervalColors: chart.cfg.seriesColors,
                         label: chart.cfg.gaugeLabel,
+                        labelPosition: chart.cfg.gaugeLabelPosition,
                         showTickLabels: chart.cfg.showTickLabels,
                         ticks: chart.cfg.ticks,
                         labelHeightAdjust: chart.cfg.labelHeightAdjust,
+                        intervalInnerRadius: chart.cfg.intervalInnerRadius,
                         intervalOuterRadius: chart.cfg.intervalOuterRadius,
                         min: chart.cfg.min,
                         max: chart.cfg.max
@@ -22606,6 +22604,22 @@ PrimeFaces.widget.Chart = PrimeFaces.widget.DeferredWidget.extend({
     _render: function() {
         this.bindItemSelect();
         this.plot = $.jqplot(this.jqpid, this.cfg.data, this.cfg);
+        this.adjustLegendTable();
+    },
+            
+    adjustLegendTable: function() {
+        var tableLegend = this.jq.find('table.jqplot-table-legend'),
+            tr = tableLegend.find('tr.jqplot-table-legend');
+        
+        if(tr.size() > 1) {
+            var trFirst = tableLegend.find('tr.jqplot-table-legend:first'),
+                trLast = tableLegend.find('tr.jqplot-table-legend:last'),
+                length = trFirst.children('td').size() - trLast.children('td').size();
+
+            for(var i = 0; i < length; i++) {
+                trLast.append('<td></td>');
+            }       
+        }
     },
     
     configure: function() {

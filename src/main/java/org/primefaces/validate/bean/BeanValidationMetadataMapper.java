@@ -73,7 +73,8 @@ public class BeanValidationMetadataMapper {
         Map<String,Object> metadata = new HashMap<String, Object>();
         List<String> validatorIds = new ArrayList<String>();
         
-        Set<ConstraintDescriptor<?>> constraints = BeanValidationMetadataExtractor.extract(context, requestContext, component.getValueExpression("value"));
+        Set<ConstraintDescriptor<?>> constraints = BeanValidationMetadataExtractor.extractAllConstraintDescriptors(
+                context, requestContext, component.getValueExpression("value"));
 
         if (constraints != null && !constraints.isEmpty()) {
             for (ConstraintDescriptor<?> constraintDescriptor : constraints) {

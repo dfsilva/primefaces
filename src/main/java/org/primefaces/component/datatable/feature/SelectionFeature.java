@@ -34,6 +34,7 @@ public class SelectionFeature implements DataTableFeature {
         String clientId = table.getClientId(context);
 		Map<String,String> params = context.getExternalContext().getRequestParameterMap();
 		String selection = params.get(clientId + "_selection");
+        Object originalValue = table.getValue();
         Object filteredValue = table.getFilteredValue();
         boolean isFiltered = (filteredValue != null);
         
@@ -47,7 +48,7 @@ public class SelectionFeature implements DataTableFeature {
 			decodeMultipleSelection(context, table, selection);
         
         if(isFiltered) {
-            table.setValue(filteredValue);
+            table.setValue(originalValue);
         }
     }
     
@@ -60,9 +61,9 @@ public class SelectionFeature implements DataTableFeature {
 
 	void decodeMultipleSelection(FacesContext context, DataTable table, String selection) {
 		Class<?> clazz = table.getValueExpression("selection").getType(context.getELContext());
-        boolean isArray = clazz.isArray();
+        boolean isArray = clazz == null ? false : clazz.isArray();
         
-        if(!isArray && !List.class.isAssignableFrom(clazz)) {
+        if(clazz != null && !isArray && !List.class.isAssignableFrom(clazz)) {
             throw new FacesException("Multiple selection reference must be an Array or a List for datatable " + table.getClientId());
         }
                 

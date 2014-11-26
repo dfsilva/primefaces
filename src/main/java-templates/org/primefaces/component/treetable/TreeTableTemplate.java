@@ -82,7 +82,7 @@ import org.primefaces.util.ComponentUtils;
     public void queueEvent(FacesEvent event) {
         FacesContext context = getFacesContext();
 
-        if(isRequestSource(context)) {
+        if(isRequestSource(context) && (event instanceof AjaxBehaviorEvent)) {
             Map<String,String> params = context.getExternalContext().getRequestParameterMap();
             String eventName = params.get(Constants.RequestParams.PARTIAL_BEHAVIOR_EVENT_PARAM);
             String clientId = this.getClientId(context);
@@ -102,12 +102,13 @@ import org.primefaces.util.ComponentUtils;
                 String nodeKey = params.get(clientId + "_collapse");
                 this.setRowKey(nodeKey);
                 TreeNode node = this.getRowNode();
+                node.setExpanded(false);
 
                 wrapperEvent = new NodeCollapseEvent(this, behaviorEvent.getBehavior(), node);
                 wrapperEvent.setPhaseId(PhaseId.APPLY_REQUEST_VALUES);
             } 
             else if(eventName.equals("select")) {
-                String nodeKey = params.get(clientId + "_instantSelect");
+                String nodeKey = params.get(clientId + "_instantSelection");
                 this.setRowKey(nodeKey);
                 TreeNode node = this.getRowNode();
 
@@ -115,7 +116,7 @@ import org.primefaces.util.ComponentUtils;
                 wrapperEvent.setPhaseId(behaviorEvent.getPhaseId());
             }  
             else if(eventName.equals("unselect")) {
-                String nodeKey = params.get(clientId + "_instantUnselect");
+                String nodeKey = params.get(clientId + "_instantUnselection");
                 this.setRowKey(nodeKey);
                 TreeNode node = this.getRowNode();
 

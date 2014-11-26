@@ -206,8 +206,11 @@ public abstract class BaseMenuRenderer extends OutcomeTargetRenderer {
 		}
 	}
     
-    protected boolean shouldRenderId(MenuItem item) {
-        return item.isDynamic() ? false: shouldWriteId((UIComponent) item);
+    protected boolean shouldRenderId(MenuElement element) {
+        if(element instanceof UIComponent)
+            return shouldWriteId((UIComponent) element);
+        else
+            return false;
     }
     
     protected void encodeMenuItemContent(FacesContext context, AbstractMenu menu, MenuItem menuitem) throws IOException {
@@ -273,12 +276,13 @@ public abstract class BaseMenuRenderer extends OutcomeTargetRenderer {
         AjaxRequestBuilder builder = RequestContext.getCurrentInstance().getAjaxRequestBuilder();
         
         builder.init()
-        		.source(clientId)
+                .source(clientId)
                 .process(menu, source.getProcess())
                 .update(menu, source.getUpdate())
                 .async(source.isAsync())
                 .global(source.isGlobal())
                 .delay(source.getDelay())
+                .timeout(source.getTimeout())
                 .partialSubmit(source.isPartialSubmit(), source.isPartialSubmitSet())
                 .resetValues(source.isResetValues(), source.isResetValuesSet())
                 .ignoreAutoUpdate(source.isIgnoreAutoUpdate())

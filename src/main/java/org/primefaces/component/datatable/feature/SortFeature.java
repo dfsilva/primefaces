@@ -84,10 +84,11 @@ public class SortFeature implements DataTableFeature {
         else {
             UIColumn sortColumn = table.findColumn(sortKey);
             ValueExpression sortByVE = sortColumn.getValueExpression("sortBy");
-                        
+            table.setValueExpression("sortBy", sortByVE);
             table.setSortColumn(sortColumn);
             table.setSortFunction(sortColumn.getSortFunction());
-            table.setSortOrder(convertSortOrderParam(sortDir)); 
+            table.setSortOrder(convertSortOrderParam(sortDir));
+            table.setSortField(sortColumn.getField());
         }
     }
     
@@ -114,7 +115,7 @@ public class SortFeature implements DataTableFeature {
             //save state
             Object filteredValue = table.getFilteredValue();
             if(!table.isLazy() && table.isFilteringEnabled() && filteredValue != null) {
-                table.updateFilteredValue(context, (List) table.getValue());
+                table.updateFilteredValue(context, (List) filteredValue);
             }
         }
    
@@ -130,6 +131,11 @@ public class SortFeature implements DataTableFeature {
         SortOrder sortOrder = SortOrder.valueOf(table.getSortOrder().toUpperCase(Locale.ENGLISH));
         MethodExpression sortFunction = table.getSortFunction();
         List list = null;
+        
+        UIColumn sortColumn = table.getSortColumn();
+        if(sortColumn != null && sortColumn.isDynamic()) {
+            ((DynamicColumn) sortColumn).applyStatelessModel();
+        }
         
         if(value instanceof List)
             list = (List) value;
@@ -166,15 +172,8 @@ public class SortFeature implements DataTableFeature {
             ValueExpression sortByVE = sortColumn.getValueExpression("sortBy");
             
             if(sortColumn.isDynamic()) {
-                ((DynamicColumn) sortColumn).applyStatelessModel();
-                Object sortByProperty = sortColumn.getSortBy();
-                
-                if(sortByProperty == null) {
-                    comparator = new DynamicChainedPropertyComparator((DynamicColumn) sortColumn, sortByVE, table.getVar(), meta.getSortOrder(), sortColumn.getSortFunction(), caseSensitiveSort, locale);
-                }
-                else {
-                    comparator = new BeanPropertyComparator(sortByVE, table.getVar(), meta.getSortOrder(), sortColumn.getSortFunction(), caseSensitiveSort, locale);
-                }
+                ((DynamicColumn) sortColumn).applyStatelessModel();                
+                comparator = new DynamicChainedPropertyComparator((DynamicColumn) sortColumn, sortByVE, table.getVar(), meta.getSortOrder(), sortColumn.getSortFunction(), caseSensitiveSort, locale);
             }
             else {
                 comparator = new BeanPropertyComparator(sortByVE, table.getVar(), meta.getSortOrder(), sortColumn.getSortFunction(), caseSensitiveSort, locale);

@@ -13,23 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.primefaces.application;
+package org.primefaces.application.resource;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.Locale;
 import java.util.Map;
-import java.util.TimeZone;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.el.ELContext;
 import javax.el.ValueExpression;
-import javax.faces.application.Resource;
-import javax.faces.application.ResourceHandler;
-import javax.faces.application.ResourceHandlerWrapper;
 import javax.faces.context.ExternalContext;
 import javax.faces.context.FacesContext;
 import org.primefaces.context.RequestContext;
@@ -37,35 +29,11 @@ import org.primefaces.model.StreamedContent;
 import org.primefaces.util.Constants;
 import org.primefaces.util.StringEncrypter;
 
-public class PrimeResourceHandler extends ResourceHandlerWrapper {
+public class StreamedContentHandler extends BaseDynamicContentHandler {
     
-    private final static Logger logger = Logger.getLogger(PrimeResourceHandler.class.getName());
-        
-    private ResourceHandler wrapped;
-
-    public PrimeResourceHandler(ResourceHandler wrapped) {
-        this.wrapped = wrapped;
-    }
-
-    @Override
-    public ResourceHandler getWrapped() {
-        return this.wrapped;
-    }
-
-    @Override
-    public Resource createResource(String resourceName, String libraryName) {
-        Resource resource = super.createResource(resourceName, libraryName);
-        
-        if(resource != null && libraryName != null && libraryName.equalsIgnoreCase(Constants.LIBRARY)) {
-            return new PrimeResource(resource);
-        }
-        else {
-            return resource;
-        }
-    }
+    private final static Logger logger = Logger.getLogger(StreamedContentHandler.class.getName());
     
-    @Override
-    public void handleResourceRequest(FacesContext context) throws IOException {
+    public void handle(FacesContext context) throws IOException {
         Map<String,String> params = context.getExternalContext().getRequestParameterMap();
         String library = params.get("ln");
         String dynamicContentId = (String) params.get(Constants.DYNAMIC_CONTENT_PARAM);
@@ -87,19 +55,7 @@ public class PrimeResourceHandler extends ResourceHandlerWrapper {
                     externalContext.setResponseStatus(200);
                     externalContext.setResponseContentType(streamedContent.getContentType());
                     
-                    if(cache) {
-                        DateFormat httpDateFormat = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss z", Locale.US);
-                        httpDateFormat.setTimeZone(TimeZone.getTimeZone("GMT"));
-                        Calendar calendar = Calendar.getInstance();
-                        calendar.add(Calendar.YEAR, 1);
-                        externalContext.setResponseHeader("Cache-Control", "max-age=29030400");
-                        externalContext.setResponseHeader("Expires", httpDateFormat.format(calendar.getTime()));
-                    }
-                    else {
-                        externalContext.setResponseHeader("Cache-Control", "no-cache, no-store, must-revalidate");
-                        externalContext.setResponseHeader("Pragma", "no-cache");
-                        externalContext.setResponseHeader("Expires", "Mon, 8 Aug 1980 10:00:00 GMT");
-                    }
+                    handleCache(externalContext, cache);
                     
                     if(streamedContent.getContentEncoding() != null) {
                         externalContext.setResponseHeader("Content-Encoding", streamedContent.getContentEncoding());
@@ -127,9 +83,6 @@ public class PrimeResourceHandler extends ResourceHandlerWrapper {
                     streamedContent.getStream().close();
                 }
             }
-        }
-        else {
-           super.handleResourceRequest(context); 
         }
     }
 }

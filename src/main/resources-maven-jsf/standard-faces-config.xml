@@ -6,7 +6,7 @@
     </factory>
 
     <application>
-        <resource-handler>org.primefaces.application.PrimeResourceHandler</resource-handler>
+        <resource-handler>org.primefaces.application.resource.PrimeResourceHandler</resource-handler>
         <system-event-listener>
             <system-event-listener-class>org.primefaces.metadata.ComponentMetadataTransformerListener</system-event-listener-class>
             <system-event-class>javax.faces.event.PostAddToViewEvent</system-event-class>
@@ -436,6 +436,12 @@
             <component-family>org.primefaces.component</component-family>
             <renderer-type>org.primefaces.component.FileUploadRenderer</renderer-type>
             <renderer-class>org.primefaces.mobile.renderkit.FileUploadRenderer</renderer-class>
+        </renderer>
+        
+        <renderer>
+            <component-family>org.primefaces.component</component-family>
+            <renderer-type>org.primefaces.component.InputSwitchRenderer</renderer-type>
+            <renderer-class>org.primefaces.mobile.renderkit.InputSwitchRenderer</renderer-class>
         </renderer>
     </render-kit>
     <!-- Mobile -->
