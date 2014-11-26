@@ -72,11 +72,7 @@ public class BeanValidationMetadataExtractor {
                     BeanDescriptor beanDescriptor = validator.getConstraintsForClass(base.getClass());
                     
                     if (beanDescriptor != null) {
-                        PropertyDescriptor propertyDescriptor = beanDescriptor.getConstraintsForProperty(property.toString());
-
-                        if (propertyDescriptor != null) {
-                            return propertyDescriptor.getConstraintDescriptors();
-                        }
+                        return beanDescriptor.getConstraintsForProperty(property.toString());
                     }
                 }
             }
