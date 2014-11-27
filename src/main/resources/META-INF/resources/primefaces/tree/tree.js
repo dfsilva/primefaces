@@ -260,6 +260,7 @@ PrimeFaces.widget.BaseTree = PrimeFaces.widget.BaseWidget.extend({
         PrimeFaces.clearSelection();
         
         if($(event.target).is(':not(.ui-tree-toggler)')) {
+        	
             var node = nodeContent.parent(),
             selectable = nodeContent.hasClass('ui-tree-selectable');
                     
@@ -463,6 +464,15 @@ PrimeFaces.widget.VerticalTree = PrimeFaces.widget.BaseTree.extend({
         
         this.jq.off('click.tree-content', nodeContentSelector)
                         .on('click.tree-content', nodeContentSelector, null, function(e) {
+                        	if(!$this.cfg.selectionMode){
+	                        	var selectionIcon = $(this),
+	                        	node = selectionIcon.closest('li'),
+	                        	toggleIcon = $('.ui-tree-toggler', node);
+	                        	if(toggleIcon.hasClass($this.cfg.collapsedIcon))
+	                                $this.expandNode(node);
+	                            else
+	                                $this.collapseNode(node);
+                        	}
                             $this.nodeClick(e, $(this));
                         });
     },
@@ -1092,6 +1102,7 @@ PrimeFaces.widget.HorizontalTree = PrimeFaces.widget.BaseTree.extend({
 
         this.jq.off('click.tree-toggle', togglerSelector)
                     .on('click.tree-toggle', togglerSelector, null, function() {
+                    	
                         var icon = $(this),
                         node = icon.closest('td.ui-treenode');
                         
