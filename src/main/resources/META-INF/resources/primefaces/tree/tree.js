@@ -399,7 +399,7 @@ PrimeFaces.widget.VerticalTree = PrimeFaces.widget.BaseTree.extend({
     
         this.container = this.jq.children('.ui-tree-container');
         this.cfg.rtl = this.jq.hasClass('ui-tree-rtl');
-        this.cfg.collapsedIcon = this.cfg.rtl ? 'ui-icon-triangle-1-w' : 'ui-icon-triangle-1-e';
+        this.cfg.collapsedIcon = this.cfg.rtl ? 'ui-icon-triangle-1-w' : 'ui-icon-plus';
         
         if(this.cfg.draggable) {
             this.initDraggable();
@@ -479,7 +479,7 @@ PrimeFaces.widget.VerticalTree = PrimeFaces.widget.BaseTree.extend({
         iconState = this.cfg.iconStates[nodeType],
         childrenContainer = node.children('.ui-treenode-children');
         
-        toggleIcon.addClass(_self.cfg.collapsedIcon).removeClass('ui-icon-triangle-1-s');
+        toggleIcon.addClass(_self.cfg.collapsedIcon).removeClass('ui-icon-minus');
         
         if(iconState) {
             nodeIcon.removeClass(iconState.expandedIcon).addClass(iconState.collapsedIcon);
@@ -519,7 +519,7 @@ PrimeFaces.widget.VerticalTree = PrimeFaces.widget.BaseTree.extend({
         nodeIcon = toggleIcon.next(),
         iconState = this.cfg.iconStates[nodeType];
 
-        toggleIcon.addClass('ui-icon-triangle-1-s').removeClass(this.cfg.collapsedIcon);
+        toggleIcon.addClass('ui-icon-minus').removeClass(this.cfg.collapsedIcon);
 
         if(iconState) {
             nodeIcon.removeClass(iconState.collapsedIcon).addClass(iconState.expandedIcon);
@@ -962,13 +962,13 @@ PrimeFaces.widget.VerticalTree = PrimeFaces.widget.BaseTree.extend({
     
     makeLeaf: function(node) {
         node.removeClass('ui-treenode-parent').addClass('ui-treenode-leaf');
-        node.find('> .ui-treenode-content > .ui-tree-toggler').addClass('ui-treenode-leaf-icon').removeClass('ui-tree-toggler ui-icon ui-icon-triangle-1-s');
+        node.find('> .ui-treenode-content > .ui-tree-toggler').addClass('ui-treenode-leaf-icon').removeClass('ui-tree-toggler ui-icon ui-icon-plus');
         node.children('.ui-treenode-children').hide().children().remove();
     },
             
     makeParent: function(node) {
         node.removeClass('ui-treenode-leaf').addClass('ui-treenode-parent');
-        node.find('> span.ui-treenode-content > span.ui-treenode-leaf-icon').removeClass('ui-treenode-leaf-icon').addClass('ui-tree-toggler ui-icon ui-icon-triangle-1-e');
+        node.find('> span.ui-treenode-content > span.ui-treenode-leaf-icon').removeClass('ui-treenode-leaf-icon').addClass('ui-tree-toggler ui-icon ui-icon-minus');
         node.children('.ui-treenode-children').append('<li class="ui-tree-droppoint ui-droppable"></li>');
         
         this.makeDropPoints(node.find('> ul.ui-treenode-children > li.ui-tree-droppoint'));
