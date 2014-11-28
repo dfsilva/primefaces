@@ -469,16 +469,10 @@ PrimeFaces.widget.VerticalTree = PrimeFaces.widget.BaseTree.extend({
        
         this.jq.off('click.tree-label', nodeLabelSelector)
 	        .on('click.tree-label', nodeLabelSelector, null, function(e) {
-	        	console.log('treelabel novo');
 	        	if(!$this.cfg.selectionMode){
 	            	var selectionIcon = $(this),
-	            	node = selectionIcon.parent(),
-	            	toggleIcon = $('.ui-tree-toggler', node);
-	            	console.log(selectionIcon);
-	            	console.log(node);
-	            	console.log(toggleIcon);
-	            	console.log($this.cfg.collapsedIcon);
-	            	console.log(toggleIcon.hasClass($this.cfg.collapsedIcon));
+	            	node = selectionIcon.closest('li');
+	            	toggleIcon = $(':first .ui-tree-toggler', node);
 	            	if(toggleIcon.hasClass($this.cfg.collapsedIcon))
 	                    $this.expandNode(node);
 	                else
