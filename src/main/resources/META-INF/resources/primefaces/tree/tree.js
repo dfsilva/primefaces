@@ -469,14 +469,17 @@ PrimeFaces.widget.VerticalTree = PrimeFaces.widget.BaseTree.extend({
        
         this.jq.off('click.tree-label', nodeLabelSelector)
 	        .on('click.tree-label', nodeLabelSelector, null, function(e) {
-	        	if(!$this.cfg.selectionMode){
-	            	var selectionIcon = $(this),
-	            	node = selectionIcon.closest('li');
-	            	toggleIcon = $(':first .ui-tree-toggler', node);
-	            	if(toggleIcon.hasClass($this.cfg.collapsedIcon))
-	                    $this.expandNode(node);
-	                else
-	                    $this.collapseNode(node);
+	        	var source = e.target || e.srcElement;
+	        	if($(source).hasClass("ui-treenode-label")){
+		        	if(!$this.cfg.selectionMode){
+		            	var selectionIcon = $(this),
+		            	node = selectionIcon.closest('li');
+		            	toggleIcon = $(':first .ui-tree-toggler', node);
+		            	if(toggleIcon.hasClass($this.cfg.collapsedIcon))
+		                    $this.expandNode(node);
+		                else
+		                    $this.collapseNode(node);
+		        	}
 	        	}
 	        });
         
